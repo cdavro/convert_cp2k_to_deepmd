@@ -5,7 +5,7 @@ SOURCEDIR := $(PROJDIR)/src
 
 #Objects
 read_input.o: $(SOURCEDIR)/read_input.f90
-	$(FC) $(FCFLAGS) -c $(SOURCEDIR)/read_input.f90 
+	$(FC) $(FCFLAGS) -c $(SOURCEDIR)/read_input.f90
 
 main.o: $(SOURCEDIR)/main.f90
 	$(FC) $(FCFLAGS) -c $(SOURCEDIR)/main.f90
