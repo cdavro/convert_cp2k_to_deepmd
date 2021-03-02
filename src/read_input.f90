@@ -18,6 +18,7 @@ CHARACTER(LEN=64)           :: in_cell_file='0', in_coord_file='0'
 CHARACTER(LEN=64)           :: in_force_file='0', in_energy_file='0'
 CHARACTER(LEN=64)           :: in_virial_file='0'
 INTEGER                     :: nb_atm=0, nb_step=0
+REAL(dp)                    :: in_box(4)=0
 !   -------------------------------------------------
 
 CONTAINS
@@ -43,7 +44,7 @@ SUBROUTINE sb_read_input(in_file)
             SELECT CASE (label)
                 CASE ('in_cell_file')
                     READ(value, * , IOSTAT=iostatus) in_cell_file
-                    PRINT'(A50,A64)', 'in_cell_file', ADJUSTR( in_cell_file )
+                    PRINT'(A50,A64)', 'in_cell_file:', ADJUSTR( in_cell_file )
                 CASE ('in_coord_file')
                     READ(value, * , IOSTAT=iostatus) in_coord_file
                     PRINT'(A50,A64)', 'in_coord_file:', ADJUSTR( in_coord_file )
@@ -62,6 +63,12 @@ SUBROUTINE sb_read_input(in_file)
                 CASE ('nb_step')
                     READ(value, * , IOSTAT=iostatus) nb_step
                     PRINT'(A50,I64)', 'nb_step:', nb_step
+                CASE ('in_box')
+                    READ(value, *, IOSTAT=iostatus) in_box(1), in_box(2), in_box(3)
+                    in_box(4) = 1
+                    PRINT'(A50,E64.10)', 'in_box_x:', in_box(1)
+                    PRINT'(A50,E64.10)', 'in_box_y:', in_box(2)
+                    PRINT'(A50,E64.10)', 'in_box_z:', in_box(3)
                 CASE DEFAULT
                     PRINT'(A50,I64)', 'Invalid label, line:', line_c
             END SELECT
