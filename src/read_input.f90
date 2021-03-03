@@ -19,6 +19,7 @@ CHARACTER(LEN=64)           :: in_force_file='0', in_energy_file='0'
 CHARACTER(LEN=64)           :: in_virial_file='0'
 INTEGER                     :: nb_atm=0, nb_step=0
 REAL(dp)                    :: in_box(4)=0
+CHARACTER(LEN=1)            :: print_type_raw_every_step='N'
 !   -------------------------------------------------
 
 CONTAINS

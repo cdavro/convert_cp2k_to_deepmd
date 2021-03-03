@@ -24,7 +24,7 @@ CHARACTER(LEN=3), ALLOCATABLE   :: atm_name_from_coord(:,:), atm_name_from_force
 INTEGER, ALLOCATABLE            :: atm_type(:,:)
 TYPE t_unique_atm
     CHARACTER(LEN=3),ALLOCATABLE:: u_name(:,:)
-    INTEGER,ALLOCATABLE         :: u_type_from_one(:,:)
+    INTEGER,ALLOCATABLE         :: u_type_from_zero(:,:)
 END TYPE t_unique_atm
 type(t_unique_atm)              :: u_atm
 !   -------------------------------------------------
@@ -56,31 +56,36 @@ IF ( in_energy_file .NE. '0' ) in_energy_file = TRIM( in_energy_file )
 IF ( in_virial_file .NE. '0' ) in_virial_file = TRIM( in_virial_file )
 
 IF ( in_box(4) .EQ. 1 ) THEN
-    PRINT*, "Writing cell.raw with provided box size (in Å)..."
-    OPEN(UNIT=30, FILE='cell.raw')
+    PRINT*, "Writing box.raw with provided box size (in Å)..."
+    PRINT*, "Works only for orthorhombic cell!"
+
+    OPEN(UNIT=30, FILE='box.raw')
         DO s = 1, nb_step
-            WRITE(30,'(F22.10,F22.10,F22.10)') in_box(1), in_box(2), in_box(3)
+            WRITE(30,'(F22.10,I2,I2,I2,F22.10,I2,I2,I2,F22.10)') in_box(1), 0, 0, 0, in_box(2), 0, 0, 0, in_box(3)
         END DO
     CLOSE(UNIT=30)
-    PRINT*, "Done writing cell.raw with provided box size (in Å)."
+    PRINT*, "Done writing box.raw with provided box size (in Å)."
 ELSE IF ( in_cell_file .NE. '0' ) THEN
     PRINT*, "Reading cell file..."
-    ALLOCATE(cell_mat(3,nb_step))
+    ALLOCATE(cell_mat(9,nb_step))
     OPEN(UNIT=20, FILE=in_cell_file, STATUS='old', FORM='formatted', ACTION='READ')
         READ(20,*)
         DO s = 1, nb_step
-            READ(20,*) DUMMY, DUMMY, cell_mat(1,s), DUMMY, DUMMY, DUMMY, cell_mat(2,s), DUMMY, DUMMY, DUMMY, cell_mat(3,s), DUMMY
+            READ(20,*) DUMMY, DUMMY, cell_mat(1,s), cell_mat(2,s), cell_mat(3,s) &
+            , cell_mat(4,s), cell_mat(5,s), cell_mat(6,s) &
+            , cell_mat(7,s), cell_mat(8,s), cell_mat(9,s), DUMMY
         END DO
     CLOSE(UNIT=20)
     PRINT*, "Done reading cell file."
-    PRINT*, "Writing cell.raw (Å to Å)..."
-    OPEN(UNIT=30, FILE='cell.raw')
+    PRINT*, "Writing box.raw (Å to Å)..."
+    OPEN(UNIT=30, FILE='box.raw')
         DO s = 1, nb_step
-            WRITE(30,'(F22.10,F22.10,F22.10)') cell_mat(1,s), cell_mat(2,s), cell_mat(3,s)
+            WRITE(30,'(*(F22.10))', ADVANCE='no') cell_mat(:,s)
+            WRITE(30,'()')
         END DO
     CLOSE(UNIT=30)
     DEALLOCATE(cell_mat)
-    PRINT*, "Done writing cell.raw (Å to Å)."
+    PRINT*, "Done writing box.raw (Å to Å)."
 END IF
 
 IF ( in_coord_file .NE. '0' ) THEN
@@ -115,10 +120,10 @@ IF ( in_coord_file .NE. '0' ) THEN
     DEALLOCATE(coord_mat)
     PRINT*, "Done writing coord.raw (Å to Å)."
     PRINT*, "Writing type.raw..."
-    ALLOCATE(u_atm%u_type_from_one(nb_atm,nb_step))
+    ALLOCATE(u_atm%u_type_from_zero(nb_atm,nb_step))
     ALLOCATE(u_atm%u_name(nb_atm,nb_step))
     u_atm%u_name(:,:) = '0'
-    u_atm%u_type_from_one(:,:) = 0
+    u_atm%u_type_from_zero(:,:) = -1
     OPEN(UNIT=32, FILE='type.raw')
         DO s = 1, nb_step
             j = 0
@@ -126,38 +131,45 @@ IF ( in_coord_file .NE. '0' ) THEN
                 IF ( .NOT. ANY( u_atm%u_name(:,s) .EQ. atm_name_from_coord(i,s) ) ) THEN
                     j = j + 1
                     u_atm%u_name(j,s) = atm_name_from_coord(i,s)
-                    u_atm%u_type_from_one(j,s) = j
-                    atm_type(i,s) = u_atm%u_type_from_one(j,s)
+                    u_atm%u_type_from_zero(j,s) = j - 1
+                    atm_type(i,s) = u_atm%u_type_from_zero(j,s)
                 ELSE
                     DO o = 1, nb_atm
                         IF ( u_atm%u_name(o,s) .EQ. atm_name_from_coord(i,s) ) THEN
-                            atm_type(i,s) = u_atm%u_type_from_one(o,s)
+                            atm_type(i,s) = u_atm%u_type_from_zero(o,s)
                             EXIT
                         END IF
                     END DO
                 END IF
             END DO
-            WRITE(32,'(*(I3))', ADVANCE='no') atm_type(:,s)
-            WRITE(32,'()')
         END DO
+        IF ( print_type_raw_every_step .EQ. 'Y' ) THEN
+            DO s = 1, nb_step
+                WRITE(32,'(*(I3))', ADVANCE='no') atm_type(:,s)
+                WRITE(32,'()')
+            END DO
+        ELSE
+            WRITE(32,'(*(I3))', ADVANCE='no') atm_type(:,1)
+            WRITE(32,'()')
+        END IF
         DO s = 1, nb_step
-            IF( MAXVAL(u_atm%u_type_from_one(:,s)) .NE. MAXVAL(u_atm%u_type_from_one) ) THEN
+            IF( MAXVAL(u_atm%u_type_from_zero(:,s)) .NE. MAXVAL(u_atm%u_type_from_zero) ) THEN
                 PRINT*, "Mismatch between of unique atom type", s &
-                , MAXVAL(u_atm%u_type_from_one(:,s)), MAXVAL(u_atm%u_type_from_one)
+                , MAXVAL(u_atm%u_type_from_zero(:,s)), MAXVAL(u_atm%u_type_from_zero)
                 STOP
             END IF
         END DO            
     CLOSE(UNIT=32)
     OPEN(UNIT=321, FILE='type_eq.raw')
         DO i = 1, nb_atm
-            IF ( u_atm%u_type_from_one(i,1) .NE. 0 ) THEN
-                WRITE(321,'(A3,I3)') u_atm%u_name(i,1), u_atm%u_type_from_one(i,1)
+            IF ( u_atm%u_type_from_zero(i,1) .NE. -1 ) THEN
+                WRITE(321,'(A3,I3)') u_atm%u_name(i,1), u_atm%u_type_from_zero(i,1)
             ELSE
                 EXIT
             END IF
         END DO
     CLOSE(UNIT=321)
-    DEALLOCATE(atm_type,u_atm%u_name,u_atm%u_type_from_one)
+    DEALLOCATE(atm_type,u_atm%u_name,u_atm%u_type_from_zero)
     IF ( 'in_force_file' .EQ. '0' ) DEALLOCATE(atm_name_from_coord)
     PRINT*, "Done writing type.raw."
     PRINT*, "Writing energy.raw (from Ha to eV)..."
@@ -196,7 +208,7 @@ IF ( in_force_file .NE. '0' ) THEN
     PRINT*, "Writing force.raw (from a.u. to eV/Å)..."
     OPEN(UNIT=34, FILE='force.raw')
         DO s = 1, nb_step
-            WRITE(34,'(*(F15.8))', ADVANCE='no') au_to_eV_per_A*force_mat(:,:,s) ! NEED A GOOD FORMATING
+            WRITE(34,'(*(F15.8))', ADVANCE='no') au_to_eV_per_A*force_mat(:,:,s)
             WRITE(34,'()')
         END DO
     CLOSE(UNIT=34)
