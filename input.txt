@@ -1,0 +1,11 @@
+!Input file example.
+!One keyword per line, space (not tab!) as separator.
+!This is a comment.
+in_cell_file    cp2k_cell_file
+in_coord_file   cp2k_xyz_file
+in_force_file   cp2k_force_file
+nb_atm          932
+nb_step         1000
+nb_stride       10
+!If box is orthorhombic AND constant.
+in_box          21.768 21.768 21.768

@@ -57,10 +57,8 @@ IF ( in_virial_file .NE. '0' ) in_virial_file = TRIM( in_virial_file )
 
 IF ( in_box(4) .EQ. 1 ) THEN
     PRINT*, "Writing box.raw with provided box size (in Å)..."
-    PRINT*, "Works only for orthorhombic cell!"
-
     OPEN(UNIT=30, FILE='box.raw')
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             WRITE(30,'(F22.10,I2,I2,I2,F22.10,I2,I2,I2,F22.10)') in_box(1), 0, 0, 0, in_box(2), 0, 0, 0, in_box(3)
         END DO
     CLOSE(UNIT=30)
@@ -70,7 +68,7 @@ ELSE IF ( in_cell_file .NE. '0' ) THEN
     ALLOCATE(cell_mat(9,nb_step))
     OPEN(UNIT=20, FILE=in_cell_file, STATUS='old', FORM='formatted', ACTION='READ')
         READ(20,*)
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             READ(20,*) DUMMY, DUMMY, cell_mat(1,s), cell_mat(2,s), cell_mat(3,s) &
             , cell_mat(4,s), cell_mat(5,s), cell_mat(6,s) &
             , cell_mat(7,s), cell_mat(8,s), cell_mat(9,s), DUMMY
@@ -79,7 +77,7 @@ ELSE IF ( in_cell_file .NE. '0' ) THEN
     PRINT*, "Done reading cell file."
     PRINT*, "Writing box.raw (Å to Å)..."
     OPEN(UNIT=30, FILE='box.raw')
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             WRITE(30,'(*(F22.10))', ADVANCE='no') cell_mat(:,s)
             WRITE(30,'()')
         END DO
@@ -96,7 +94,7 @@ IF ( in_coord_file .NE. '0' ) THEN
     ALLOCATE(atm_type(nb_atm,nb_step))
     ALLOCATE(pot_energy(nb_step))
     OPEN(UNIT=21, FILE=in_coord_file, STATUS='old', FORM='formatted', ACTION='READ')
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             READ(21,*) nb_atm_from_coord(s)
             IF ( nb_atm_from_coord(s) .NE. nb_atm ) THEN
                 PRINT*, 'Number of atom mismatch between input and coord file, exiting...', s, nb_atm, nb_atm_from_coord(s)
@@ -112,7 +110,7 @@ IF ( in_coord_file .NE. '0' ) THEN
     PRINT*, "Writing coord.raw (Å to Å)..."
     DEALLOCATE(nb_atm_from_coord)
     OPEN(UNIT=31, FILE='coord.raw')
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             WRITE(31,'(*(F22.10))', ADVANCE='no') coord_mat(:,:,s)
             WRITE(31,'()')
         END DO
@@ -125,7 +123,7 @@ IF ( in_coord_file .NE. '0' ) THEN
     u_atm%u_name(:,:) = '0'
     u_atm%u_type_from_zero(:,:) = -1
     OPEN(UNIT=32, FILE='type.raw')
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             j = 0
             DO i = 1, nb_atm
                 IF ( .NOT. ANY( u_atm%u_name(:,s) .EQ. atm_name_from_coord(i,s) ) ) THEN
@@ -152,7 +150,7 @@ IF ( in_coord_file .NE. '0' ) THEN
             WRITE(32,'(*(I3))', ADVANCE='no') atm_type(:,1)
             WRITE(32,'()')
         END IF
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             IF( MAXVAL(u_atm%u_type_from_zero(:,s)) .NE. MAXVAL(u_atm%u_type_from_zero) ) THEN
                 PRINT*, "Mismatch between of unique atom type", s &
                 , MAXVAL(u_atm%u_type_from_zero(:,s)), MAXVAL(u_atm%u_type_from_zero)
@@ -174,7 +172,7 @@ IF ( in_coord_file .NE. '0' ) THEN
     PRINT*, "Done writing type.raw."
     PRINT*, "Writing energy.raw (from Ha to eV)..."
     OPEN(UNIT=33, FILE='energy.raw')
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             WRITE(33,'(F22.10)') Ha_to_eV*pot_energy(s)
         END DO
     CLOSE(UNIT=33)
@@ -187,7 +185,7 @@ IF ( in_force_file .NE. '0' ) THEN
     ALLOCATE(force_mat(3,nb_atm,nb_step))
     ALLOCATE(atm_name_from_force(nb_atm,nb_step))
     OPEN(UNIT=24, FILE=in_force_file, STATUS='old', FORM='formatted', ACTION='READ')
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             DO j = 1, 4
                 READ(24,*)
             END DO
@@ -207,7 +205,7 @@ IF ( in_force_file .NE. '0' ) THEN
     DEALLOCATE(atm_name_from_force)
     PRINT*, "Writing force.raw (from a.u. to eV/Å)..."
     OPEN(UNIT=34, FILE='force.raw')
-        DO s = 1, nb_step
+        DO s = 1, nb_step, nb_stride
             WRITE(34,'(*(F15.8))', ADVANCE='no') au_to_eV_per_A*force_mat(:,:,s)
             WRITE(34,'()')
         END DO
