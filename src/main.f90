@@ -67,11 +67,16 @@ ELSE IF ( in_cell_file .NE. '0' ) THEN
     PRINT*, "Reading cell file..."
     ALLOCATE(cell_mat(9,nb_step))
     OPEN(UNIT=20, FILE=in_cell_file, STATUS='old', FORM='formatted', ACTION='READ')
-        READ(20,*)
-        DO s = 1, nb_step, nb_stride
-            READ(20,*) DUMMY, DUMMY, cell_mat(1,s), cell_mat(2,s), cell_mat(3,s) &
-            , cell_mat(4,s), cell_mat(5,s), cell_mat(6,s) &
-            , cell_mat(7,s), cell_mat(8,s), cell_mat(9,s), DUMMY
+        s = 1
+        DO WHILE( s .LE. nb_step )
+            READ(20,*) DUMMY
+            IF ( DUMMY .NE. "#" ) THEN
+                BACKSPACE(20)
+                READ(20,*) DUMMY, DUMMY, cell_mat(1,s), cell_mat(2,s), cell_mat(3,s) &
+                , cell_mat(4,s), cell_mat(5,s), cell_mat(6,s) &
+                , cell_mat(7,s), cell_mat(8,s), cell_mat(9,s), DUMMY
+                s = s + 1
+            END IF
         END DO
     CLOSE(UNIT=20)
     PRINT*, "Done reading cell file."
@@ -94,7 +99,7 @@ IF ( in_coord_file .NE. '0' ) THEN
     ALLOCATE(atm_type(nb_atm,nb_step))
     ALLOCATE(pot_energy(nb_step))
     OPEN(UNIT=21, FILE=in_coord_file, STATUS='old', FORM='formatted', ACTION='READ')
-        DO s = 1, nb_step, nb_stride
+        DO s = 1, nb_step
             READ(21,*) nb_atm_from_coord(s)
             IF ( nb_atm_from_coord(s) .NE. nb_atm ) THEN
                 PRINT*, 'Number of atom mismatch between input and coord file, exiting...', s, nb_atm, nb_atm_from_coord(s)
@@ -185,7 +190,7 @@ IF ( in_force_file .NE. '0' ) THEN
     ALLOCATE(force_mat(3,nb_atm,nb_step))
     ALLOCATE(atm_name_from_force(nb_atm,nb_step))
     OPEN(UNIT=24, FILE=in_force_file, STATUS='old', FORM='formatted', ACTION='READ')
-        DO s = 1, nb_step, nb_stride
+        DO s = 1, nb_step
             DO j = 1, 4
                 READ(24,*)
             END DO
