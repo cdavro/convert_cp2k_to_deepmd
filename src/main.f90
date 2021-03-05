@@ -18,7 +18,7 @@ CHARACTER(LEN=100)              :: in_file
 INTEGER                         :: nb_argument
 !   -------------------------------------------------
 REAL(dp), ALLOCATABLE           :: cell_mat(:,:), coord_mat(:,:,:), force_mat(:,:,:)
-!REAL(dp), ALLOCATABLE           :: energy_mat(:,:), virial_mat(:,:)
+REAL(dp), ALLOCATABLE           :: energy_mat(:)!, virial_mat(:,:)
 REAL(dp), ALLOCATABLE           :: nb_atm_from_coord(:), pot_energy(:)
 CHARACTER(LEN=3), ALLOCATABLE   :: atm_name_from_coord(:,:), atm_name_from_force(:,:)
 INTEGER, ALLOCATABLE            :: atm_type(:,:)
@@ -54,6 +54,7 @@ IF ( in_coord_file .NE. '0' ) in_coord_file = TRIM( in_coord_file )
 IF ( in_force_file .NE. '0' ) in_force_file = TRIM( in_force_file )
 IF ( in_energy_file .NE. '0' ) in_energy_file = TRIM( in_energy_file )
 IF ( in_virial_file .NE. '0' ) in_virial_file = TRIM( in_virial_file )
+IF ( in_forceeval_file .NE. '0' ) in_forceeval_file = TRIM( in_forceeval_file )
 
 IF ( in_box(4) .EQ. 1 ) THEN
     PRINT*, "Writing box.raw with provided box size (in Å)..."
@@ -66,6 +67,7 @@ IF ( in_box(4) .EQ. 1 ) THEN
 ELSE IF ( in_cell_file .NE. '0' ) THEN
     PRINT*, "Reading cell file..."
     ALLOCATE(cell_mat(9,nb_step))
+    cell_mat(:,:) = 0.0_dp
     OPEN(UNIT=20, FILE=in_cell_file, STATUS='old', FORM='formatted', ACTION='READ')
         s = 1
         DO WHILE( s .LE. nb_step )
@@ -94,10 +96,15 @@ END IF
 IF ( in_coord_file .NE. '0' ) THEN
     PRINT*, "Reading coord file..."
     ALLOCATE(coord_mat(3,nb_atm,nb_step))
+    coord_mat(:,:,:) = 0.0_dp
     ALLOCATE(nb_atm_from_coord(nb_step))
+    nb_atm_from_coord(:) = 0
     ALLOCATE(atm_name_from_coord(nb_atm,nb_step))
+    atm_name_from_coord(:,:) = '000'
     ALLOCATE(atm_type(nb_atm,nb_step))
+    atm_type(:,:) = 0
     ALLOCATE(pot_energy(nb_step))
+    pot_energy(:) = 0.0_dp
     OPEN(UNIT=21, FILE=in_coord_file, STATUS='old', FORM='formatted', ACTION='READ')
         DO s = 1, nb_step
             READ(21,*) nb_atm_from_coord(s)
@@ -173,22 +180,25 @@ IF ( in_coord_file .NE. '0' ) THEN
         END DO
     CLOSE(UNIT=321)
     DEALLOCATE(atm_type,u_atm%u_name,u_atm%u_type_from_zero)
-    IF ( 'in_force_file' .EQ. '0' ) DEALLOCATE(atm_name_from_coord)
+    IF ( in_force_file .EQ. '0' ) DEALLOCATE(atm_name_from_coord)
     PRINT*, "Done writing type.raw."
-    PRINT*, "Writing energy.raw (from Ha to eV)..."
-    OPEN(UNIT=33, FILE='energy.raw')
-        DO s = 1, nb_step, nb_stride
-            WRITE(33,'(F22.10)') Ha_to_eV*pot_energy(s)
-        END DO
-    CLOSE(UNIT=33)
-    DEALLOCATE(pot_energy)
-    PRINT*, "Done writing energy.raw (from Ha to eV)."
+    IF ( get_energy_from .EQ. 'CO' ) THEN
+        PRINT*, "Writing energy.raw (from Ha to eV) [from coord file]..."
+        OPEN(UNIT=33, FILE='energy.raw')
+            DO s = 1, nb_step, nb_stride
+                WRITE(33,'(F22.10)') Ha_to_eV*pot_energy(s)
+            END DO
+        CLOSE(UNIT=33)
+        DEALLOCATE(pot_energy)
+        PRINT*, "Done writing energy.raw (from Ha to eV) [from coord file]."
+    END IF
 END IF
-
 IF ( in_force_file .NE. '0' ) THEN
     PRINT*, "Reading force file..."
     ALLOCATE(force_mat(3,nb_atm,nb_step))
     ALLOCATE(atm_name_from_force(nb_atm,nb_step))
+    force_mat(:,:,:) = 0.0_dp
+    atm_name_from_force(:,:) = '000'
     OPEN(UNIT=24, FILE=in_force_file, STATUS='old', FORM='formatted', ACTION='READ')
         DO s = 1, nb_step
             DO j = 1, 4
@@ -217,6 +227,25 @@ IF ( in_force_file .NE. '0' ) THEN
     CLOSE(UNIT=34)
     DEALLOCATE(force_mat)
     PRINT*, "Done force.raw (from au to eV/Å)."
+END IF
+IF ( ( in_forceeval_file .NE. '0') .AND. ( get_energy_from .EQ. 'FE' ) ) THEN
+    PRINT*, "Reading force eval file..."
+    ALLOCATE(energy_mat(nb_step))
+    energy_mat(:) = 0.0_dp
+    OPEN(UNIT=25, FILE=in_forceeval_file, STATUS='old', FORM='formatted', ACTION='READ')
+    DO s = 1, nb_step
+        READ(25,*)
+        READ(25,*) DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, energy_mat(s)
+    END DO
+    CLOSE(UNIT=25)
+    PRINT*, "Writing energy.raw (from Ha to eV) [from force eval file]..."
+    OPEN(UNIT=35, FILE='energy.raw')
+        DO s = 1, nb_step, nb_stride
+            WRITE(35,'(F30.15)') Ha_to_eV*energy_mat(s)
+        END DO
+    CLOSE(UNIT=35)
+    DEALLOCATE(energy_mat)
+    PRINT*, "Done writing energy.raw (from Ha to eV) [from force eval file]."
 END IF
 
 END PROGRAM main

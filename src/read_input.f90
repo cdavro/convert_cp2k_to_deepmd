@@ -16,10 +16,12 @@ INTEGER                     :: delim
 !   ------------------------------------------------- Variables
 CHARACTER(LEN=64)           :: in_cell_file='0', in_coord_file='0'
 CHARACTER(LEN=64)           :: in_force_file='0', in_energy_file='0'
-CHARACTER(LEN=64)           :: in_virial_file='0'
+CHARACTER(LEN=64)           :: in_virial_file='0', in_forceeval_file='0'
 INTEGER                     :: nb_atm=0, nb_step=0, nb_stride=1
 REAL(dp)                    :: in_box(4)=0
 CHARACTER(LEN=1)            :: print_type_raw_every_step='N'
+CHARACTER(LEN=2)            :: get_energy_from="0"
+
 !   -------------------------------------------------
 
 CONTAINS
@@ -54,10 +56,16 @@ SUBROUTINE sb_read_input(in_file)
                     PRINT'(A50,A64)', 'in_force_file:', ADJUSTR( in_force_file )
                 CASE ('in_energy_file')
                     READ(value, * , IOSTAT=iostatus) in_energy_file
-                    PRINT'(A50,I64)', 'in_energy_file:', ADJUSTR( in_energy_file )
+                    PRINT'(A50,A65)', 'in_energy_file:', ADJUSTR( in_energy_file )
+                CASE ('in_forceeval_file')
+                    READ(value, * , IOSTAT=iostatus) in_forceeval_file
+                    PRINT'(A50,A64)', 'in_forceeval_file:', ADJUSTR( in_forceeval_file )
                 CASE ('in_virial_file')
                     READ(value, * , IOSTAT=iostatus) in_virial_file
-                    PRINT'(A50,I64)', 'in_virial_file:', ADJUSTR( in_virial_file )
+                    PRINT'(A50,A64)', 'in_virial_file:', ADJUSTR( in_virial_file )
+                CASE ('get_energy_from')
+                    READ(value, * , IOSTAT=iostatus) get_energy_from
+                    PRINT'(A50,A64)', 'get_energy_from:', ADJUSTR( get_energy_from )
                 CASE ('nb_atm')
                     READ(value, * , IOSTAT=iostatus) nb_atm
                     PRINT'(A50,I64)', 'nb_atm:', nb_atm
