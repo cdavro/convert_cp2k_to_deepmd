@@ -13,3 +13,5 @@ in_box            21.768 21.768 21.768
 !Where to get the energy from
 !CO = coord, FE = force_eval
 get_energy_from   CO
+!Print an xyz (for use with stride != 1)
+reprint_xyz       Y

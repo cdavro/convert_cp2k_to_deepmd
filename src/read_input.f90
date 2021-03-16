@@ -21,6 +21,7 @@ INTEGER                     :: nb_atm=0, nb_step=0, nb_stride=1
 REAL(dp)                    :: in_box(4)=0
 CHARACTER(LEN=1)            :: print_type_raw_every_step='N'
 CHARACTER(LEN=2)            :: get_energy_from="0"
+CHARACTER(LEN=1)            :: reprint_xyz='N'
 
 !   -------------------------------------------------
 
@@ -66,6 +67,9 @@ SUBROUTINE sb_read_input(in_file)
                 CASE ('get_energy_from')
                     READ(value, * , IOSTAT=iostatus) get_energy_from
                     PRINT'(A50,A64)', 'get_energy_from:', ADJUSTR( get_energy_from )
+                CASE ('reprint_xyz')
+                    READ(value, * , IOSTAT=iostatus) reprint_xyz
+                    PRINT'(A50,A64)', 'reprint_xyz:', ADJUSTR( reprint_xyz )
                 CASE ('nb_atm')
                     READ(value, * , IOSTAT=iostatus) nb_atm
                     PRINT'(A50,I64)', 'nb_atm:', nb_atm

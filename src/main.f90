@@ -127,8 +127,22 @@ IF ( in_coord_file .NE. '0' ) THEN
             WRITE(31,'()')
         END DO
     CLOSE(UNIT=31)
-    DEALLOCATE(coord_mat)
     PRINT*, "Done writing coord.raw (Å to Å)."
+    IF ( reprint_xyz .EQ. 'Y') THEN
+        OPEN(UNIT=311, FILE='coord.xyz')
+        PRINT*, "Writing coord.xyz (Å to Å)..."
+        DO s = 1, nb_step, nb_stride
+            WRITE(311,'(I10)') nb_atm
+            WRITE(311,'(A10,I10)') "Step nb:", s
+            DO i = 1, nb_atm
+                WRITE(311,'(A3,1X,F22.10,1X,F22.10,1X,F22.10)') ADJUSTL( atm_name_from_coord(i,s) ) &
+                , coord_mat(1,i,s), coord_mat(2,i,s), coord_mat(3,i,s)
+            END DO
+        END DO
+        CLOSE(UNIT=311)
+        PRINT*, "Done writing coord.xyz (Å to Å)."
+    END IF
+    DEALLOCATE(coord_mat)
     PRINT*, "Writing type.raw..."
     ALLOCATE(u_atm%u_type_from_zero(nb_atm,nb_step))
     ALLOCATE(u_atm%u_name(nb_atm,nb_step))
