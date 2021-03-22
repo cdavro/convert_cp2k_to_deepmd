@@ -114,7 +114,11 @@ IF ( in_coord_file .NE. '0' ) THEN
                 PRINT*, 'Number of atom mismatch between input and coord file, exiting...', s, nb_atm, nb_atm_from_coord(s)
                 STOP
             END IF
-            READ(21,*) DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, pot_energy(s)
+            IF ( get_energy_from .EQ. 'CO' ) THEN
+                READ(21,*) DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, DUMMY, pot_energy(s)
+            ELSE
+                READ(21,*) DUMMY
+            END IF
             DO i = 1, nb_atm
                 READ(21,*) atm_name_from_coord(i,s), coord_mat(1,i,s), coord_mat(2,i,s), coord_mat(3,i,s)
             END DO
