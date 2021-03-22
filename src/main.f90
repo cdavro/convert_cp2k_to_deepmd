@@ -10,8 +10,10 @@ IMPLICIT NONE
 !   ------------------------------------------------- Set Double precision
 INTEGER, PARAMETER              :: dp=KIND(0.0d0)
 !   -------------------------------------------------
-REAL(dp), PARAMETER             :: Ha_to_eV=27.21138386_dp
-REAL(dp), PARAMETER             :: au_to_eV_per_A=51.42208619083232_dp
+REAL(dp), PARAMETER             :: Ha_to_eV=27.211386245988_dp
+REAL(dp), PARAMETER             :: bohr_to_A=0.529177210903_dp
+REAL(dp), PARAMETER             :: au_to_eV_per_A=Ha_to_eV/bohr_to_A
+
 !   -------------------------------------------------
 CHARACTER(LEN=100)              :: in_file
 !   -------------------------------------------------
