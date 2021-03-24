@@ -148,8 +148,7 @@ IF ( in_stresstensor_file .NE. '0' ) THEN
         PRINT*, "Writing virial.raw (GPa * A3 to eV)..."
         OPEN(UNIT=36, FILE='virial.raw')
         DO s = 1, nb_step, nb_stride
-            !WRITE(36,'(*(F22.10))', ADVANCE='no') ( stress_mat(:,s) *  cell_volume(s) ) / eV_per_A3_to_GPa
-            WRITE(36,'(*(F22.10))', ADVANCE='no') stress_mat(:,s)
+            WRITE(36,'(*(F22.10))', ADVANCE='no') ( stress_mat(:,s) *  cell_volume(s) ) / eV_per_A3_to_GPa
             WRITE(36,'()')
         END DO
         CLOSE(UNIT=36)
@@ -307,8 +306,7 @@ IF ( in_force_file .NE. '0' ) THEN
     PRINT*, "Writing force.raw (from a.u. to eV/Å)..."
     OPEN(UNIT=34, FILE='force.raw')
         DO s = 1, nb_step, nb_stride
-            WRITE(34,'(*(F15.8))', ADVANCE='no') force_mat(:,:,s)
-            !WRITE(34,'(*(F15.8))', ADVANCE='no') au_to_eV_per_A*force_mat(:,:,s)
+            WRITE(34,'(*(F15.8))', ADVANCE='no') au_to_eV_per_A*force_mat(:,:,s)
             WRITE(34,'()')
         END DO
     CLOSE(UNIT=34)
@@ -333,8 +331,7 @@ IF ( ( in_forceeval_file .NE. '0') .AND. ( get_energy_from .EQ. 'FE' ) ) THEN
     PRINT*, "Writing energy.raw (from Ha to eV) [from force eval file]..."
     OPEN(UNIT=35, FILE='energy.raw')
         DO s = 1, nb_step, nb_stride
-            !WRITE(35,'(F30.15)') Ha_to_eV*energy_mat(s)
-            WRITE(35,'(F30.15)') energy_mat(s)
+            WRITE(35,'(F30.15)') Ha_to_eV*energy_mat(s)
         END DO
     CLOSE(UNIT=35)
     DEALLOCATE(energy_mat)
