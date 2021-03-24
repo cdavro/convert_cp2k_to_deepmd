@@ -1,17 +1,18 @@
 !Input file example.
 !One keyword per line, space (not tab!) as separator.
 !This is a comment.
-in_cell_file      cp2k_cell_file
-in_coord_file     cp2k_xyz_file
-in_force_file     cp2k_force_file
-in_forceeval_file cp2k_force_eval_file
-nb_atm            932
-nb_step           1000
-nb_stride         10
+in_cell_file         cp2k_cell_file
+in_coord_file        cp2k_xyz_file
+in_force_file        cp2k_force_file
+in_forceeval_file    cp2k_force_eval_file
+in_stresstensor_file cp2k_stress_tensor_file
+nb_atm               932
+nb_step              1000
+nb_stride            10
 !If box is orthorhombic AND constant.
-in_box            21.768 21.768 21.768
+in_box               21.768 21.768 21.768
 !Where to get the energy from
 !CO = coord, FE = force_eval
-get_energy_from   CO
+get_energy_from      CO
 !Print an xyz (for use with stride != 1)
-reprint_xyz       Y
+reprint_xyz          Y
