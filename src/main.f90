@@ -137,9 +137,9 @@ IF ( in_stresstensor_file .NE. '0' ) THEN
             ELSE IF ( ( INDEX(TRIM(ADJUSTL(DUMMY)),"STRESS| Analytical") .EQ. 1 ) .OR. &
                 ( INDEX(TRIM(ADJUSTL(DUMMY))," STRESS| Numerical") .EQ. 1 ) ) THEN
                 READ(26,*) DUMMY
-                READ(26,*) DUMMY, stress_mat(1,s), stress_mat(2,s), stress_mat(3,s)
-                READ(26,*) DUMMY, stress_mat(4,s), stress_mat(5,s), stress_mat(6,s)
-                READ(26,*) DUMMY, stress_mat(7,s), stress_mat(8,s), stress_mat(9,s)
+                READ(26,*) DUMMY, DUMMY, stress_mat(1,s), stress_mat(2,s), stress_mat(3,s)
+                READ(26,*) DUMMY, DUMMY, stress_mat(4,s), stress_mat(5,s), stress_mat(6,s)
+                READ(26,*) DUMMY, DUMMY, stress_mat(7,s), stress_mat(8,s), stress_mat(9,s)
                 s = s + 1
             END IF
         END DO
