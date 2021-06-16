@@ -311,7 +311,7 @@ IF ( in_force_file .NE. '0' ) THEN
         END DO
     CLOSE(UNIT=34)
     DEALLOCATE(force_mat)
-    PRINT*, "Done force.raw (from au to eV/Å)."
+    PRINT*, "Done force.raw (from a.u. to eV/Å)."
 END IF
 IF ( ( in_forceeval_file .NE. '0') .AND. ( get_energy_from .EQ. 'FE' ) ) THEN
     PRINT*, "Reading force eval file..."
